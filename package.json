@@ -23,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "axios": "^1.11.0",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {

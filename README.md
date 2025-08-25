@@ -1,201 +1,130 @@
-# Custom MCP Server for Anytype
+# Anytype MCP Server Personalizado
 
-A custom MCP (Model Context Protocol) server for Anytype that includes **full support for object updates**, functionality that is not available in the official Anytype MCP server.
+Un servidor MCP (Model Context Protocol) personalizado para interactuar con la API de Anytype, con funcionalidades extendidas y una estructura modular mejorada.
 
-## 🚀 Features
+## Características
 
-- ✅ **Update existing objects** (main added functionality)
-- ✅ Create new objects
-- ✅ Search objects (global and by space)
-- ✅ List spaces and objects
-- ✅ Get specific objects
-- ✅ Delete (archive) objects
-- ✅ Object type management
-- ✅ Full Markdown support in content
-- ✅ Custom property handling
-- ✅ Icons and metadata
+- ✅ **Operaciones básicas**: Crear, leer, actualizar y eliminar objetos
+- ✅ **Gestión de espacios**: Listar y buscar en espacios
+- ✅ **Operaciones de colecciones**: Agregar y remover objetos de colecciones usando endpoints oficiales
+- ✅ **Búsqueda avanzada**: Buscar objetos por tipo, contenido y más
+- ✅ **Estructura modular**: Código organizado en módulos separados
+- ✅ **TypeScript**: Tipado fuerte para mejor desarrollo
 
-## 📋 Prerequisites
+## Estructura del Proyecto
 
-1. **Anytype Desktop** must be running on your machine
-2. **Node.js** 18+ installed
-3. **Anytype API Key** (obtained through authentication process)
+```
+src/
+├── api/
+│   └── client.ts          # Cliente API para comunicación con Anytype
+├── services/
+│   └── mcp-service.ts     # Lógica de negocio del servidor MCP
+├── types/
+│   └── index.ts           # Definiciones de tipos TypeScript
+└── index.ts               # Punto de entrada principal
+```
 
-## 🔧 Installation
+### Módulos
 
-### 1. Clone or download this project
+#### `api/client.ts`
+Contiene la clase `AnytypeApiClient` que maneja todas las comunicaciones HTTP con la API de Anytype:
+- Configuración de headers y autenticación
+- Métodos para todas las operaciones CRUD
+- Manejo de errores centralizado
+- Soporte para endpoints de listas/colecciones
 
-### 2. Install dependencies
+#### `services/mcp-service.ts`
+Contiene la clase `McpAnytypeService` que implementa la lógica específica del servidor MCP:
+- Formateo de respuestas para el protocolo MCP
+- Manejo de errores específicos del MCP
+- Validación de parámetros
+- Transformación de datos
+
+#### `types/index.ts`
+Definiciones de tipos TypeScript para:
+- Entidades de Anytype (espacios, objetos, propiedades)
+- Requests de API
+- Interfaces de operaciones
+
+## Configuración
+
+### Variables de Entorno
 
 ```bash
-cd my-mcp-anytype
+ANYTYPE_API_KEY=tu-api-key-aqui
+ANYTYPE_BASE_URL=http://localhost:31009  # Opcional, por defecto localhost
+```
+
+### Instalación
+
+```bash
+# Instalar dependencias
 npm install
-```
 
-### 3. Build the project
-
-```bash
+# Compilar TypeScript
 npm run build
+
+# Iniciar servidor
+npm start
 ```
 
-## 🔑 API Key Configuration
+## Herramientas Disponibles
 
-### Option 1: Get API Key through challenge
+### Gestión de Espacios
+- `anytype_list_spaces`: Lista todos los espacios disponibles
+
+### Operaciones de Objetos
+- `anytype_search_objects`: Busca objetos con filtros avanzados
+- `anytype_get_object`: Obtiene un objeto específico
+- `anytype_create_object`: Crea un nuevo objeto
+- `anytype_update_object`: Actualiza un objeto existente
+- `anytype_delete_object`: Elimina (archiva) un objeto
+- `anytype_list_objects`: Lista objetos en un espacio
+- `anytype_list_types`: Lista tipos de objetos disponibles
+
+### Operaciones de Colecciones
+- `anytype_add_to_collection`: Agrega un objeto a una colección
+- `anytype_remove_from_collection`: Remueve un objeto de una colección
+
+## Endpoints de API Utilizados
+
+Este servidor utiliza los endpoints oficiales de Anytype API v2025-05-20:
+
+- `POST /v1/spaces/{space_id}/lists/{list_id}/objects` - Agregar a colección
+- `DELETE /v1/spaces/{space_id}/lists/{list_id}/objects/{object_id}` - Remover de colección
+- `GET /v1/spaces/{space_id}/lists/{list_id}/views` - Obtener vistas de lista
+- `GET /v1/spaces/{space_id}/lists/{list_id}/views/{view_id}/objects` - Obtener objetos de vista
+
+## Mejoras Implementadas
+
+### Estructura Modular
+- **Separación de responsabilidades**: API client, servicios MCP y tipos separados
+- **Mantenibilidad**: Código más fácil de mantener y extender
+- **Reutilización**: Componentes reutilizables
+- **Testing**: Estructura que facilita las pruebas unitarias
+
+### Endpoints Oficiales
+- **Colecciones**: Uso de endpoints oficiales para operaciones de lista
+- **Compatibilidad**: Alineado con la API oficial de Anytype
+- **Estabilidad**: Menos propenso a cambios en la API
+
+## Desarrollo
+
+### Scripts Disponibles
 
 ```bash
-# 1. Request challenge
-curl -X POST "http://localhost:31009/v1/auth/challenges" \
-  -H "Content-Type: application/json"
-
-# 2. Use the challenge_id in Anytype Desktop (Settings > API)
-# 3. Create the API key
-curl -X POST "http://localhost:31009/v1/auth/keys" \
-  -H "Content-Type: application/json" \
-  -d '{"challenge_id": "YOUR_CHALLENGE_ID"}'
+npm run build    # Compilar TypeScript
+npm start        # Iniciar servidor
+npm run dev      # Modo desarrollo (si está configurado)
 ```
 
-### Option 2: Generate from Anytype Desktop
+### Agregar Nuevas Funcionalidades
 
-1. Open Anytype Desktop
-2. Go to Settings → API
-3. Generate a new API Key
-4. Copy the generated key
+1. **Nuevos endpoints**: Agregar métodos en `AnytypeApiClient`
+2. **Nuevas herramientas MCP**: Agregar métodos en `McpAnytypeService`
+3. **Nuevos tipos**: Definir interfaces en `types/index.ts`
+4. **Registrar herramienta**: Actualizar `index.ts` con la nueva herramienta
 
-### 3. Set environment variable
+## Licencia
 
-```bash
-# Windows
-set ANYTYPE_API_KEY=your_api_key_here
-
-# PowerShell
-$env:ANYTYPE_API_KEY="your_api_key_here"
-```
-
-## 🚀 Usage with Claude Desktop
-
-### 1. Configure in Claude Desktop
-
-Edit your Claude Desktop configuration file:
-
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "anytype-custom": {
-      "command": "node",
-      "args": ["path\\to\\your\\my-mcp-anytype\\dist\\index.js"],
-      "env": {
-        "ANYTYPE_API_KEY": "your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-### 2. Restart Claude Desktop
-
-Restart Claude Desktop to load the new MCP server.
-
-## 📖 Usage Examples
-
-### Update an existing object (Key functionality!)
-
-```
-Please update the object with ID "abc123" in space "space456" changing the title to "My updated document" and adding new markdown content.
-```
-
-### Create a new object
-
-```
-Create a new page in the "my-space" space with the title "My new page" and markdown content with a task list.
-```
-
-### Search objects
-
-```
-Search for all objects containing "project" in my Anytype spaces.
-```
-
-### List objects in a space
-
-```
-Show all objects in my main Anytype space.
-```
-
-## 🛠️ Available Tools
-
-| Tool | Description |
-|------|-------------|
-| `anytype_list_spaces` | List all available spaces |
-| `anytype_search_objects` | Search objects by text and filters |
-| `anytype_get_object` | Get a specific object |
-| `anytype_create_object` | Create a new object |
-| **`anytype_update_object`** | **Update an existing object** ⭐ |
-| `anytype_delete_object` | Delete (archive) an object |
-| `anytype_list_objects` | List objects in a space |
-| `anytype_list_types` | List available object types |
-
-## 🆚 Differences with the Official MCP
-
-| Feature | Official MCP | Custom MCP |
-|---------|-------------|------------|
-| Create objects | ✅ | ✅ |
-| Read objects | ✅ | ✅ |
-| **Update objects** | ❌ | ✅ |
-| Delete objects | ✅ | ✅ |
-| Advanced search | ✅ | ✅ |
-| Type management | ❌ | ✅ |
-
-## 🔧 Development
-
-### Run in development mode
-
-```bash
-npm run dev
-```
-
-### Build
-
-```bash
-npm run build
-```
-
-### Project structure
-
-```
-my-mcp-anytype/
-├── src/
-│   └── index.ts          # Main code
-├── dist/                 # Compiled code
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-## 🐛 Troubleshooting
-
-### Connection error
-
-- Verify that Anytype Desktop is running
-- Check that the API Key is valid
-- Ensure port 31009 is available
-
-### Authentication error
-
-- Regenerate your API Key in Anytype Desktop
-- Verify that the `ANYTYPE_API_KEY` variable is configured correctly
-
-### Server doesn't appear in Claude
-
-- Verify the path to the compiled file in the configuration
-- Make sure you have built the project (`npm run build`)
-- Restart Claude Desktop after changing the configuration
-
-## 📝 License
-
-MIT License - Feel free to modify and distribute according to your needs.
-
-## 🤝 Contributions
-
-Contributions are welcome! This server was created to cover the missing object update functionality in the official Anytype MCP.
+MIT
