@@ -26,19 +26,51 @@ export const paginationSchema = {
   },
 };
 
-// Schema for object properties
+// Schema for object properties - comprehensive property types based on API
 export const objectPropertiesSchema = {
   type: 'array',
   description: 'Propiedades del objeto',
   items: {
     type: 'object',
     properties: {
-      key: { type: 'string' },
-      text: { type: 'string' },
-      checkbox: { type: 'boolean' },
-      number: { type: 'number' },
-      url: { type: 'string' },
+      key: { type: 'string', description: 'Clave de la propiedad' },
+      // Text property
+      text: { type: 'string', description: 'Valor de texto' },
+      // Number property
+      number: { type: 'number', description: 'Valor numérico' },
+      // Checkbox property
+      checkbox: { type: 'boolean', description: 'Valor booleano' },
+      // URL property
+      url: { type: 'string', description: 'URL' },
+      // Email property
+      email: { type: 'string', description: 'Dirección de email' },
+      // Phone property
+      phone: { type: 'string', description: 'Número de teléfono' },
+      // Date property
+      date: { type: 'string', description: 'Fecha en formato ISO 8601' },
+      // Select property (single tag)
+      select: { type: 'string', description: 'ID del tag seleccionado' },
+      // Multi-select property (multiple tags)
+      multi_select: { 
+        type: 'array', 
+        items: { type: 'string' },
+        description: 'Array de IDs de tags seleccionados' 
+      },
+      // Files property
+      files: { 
+        type: 'array', 
+        items: { type: 'string' },
+        description: 'Array de IDs de archivos' 
+      },
+      // Objects property (relations)
+      objects: { 
+        type: 'array', 
+        items: { type: 'string' },
+        description: 'Array de IDs de objetos relacionados' 
+      },
     },
+    required: ['key'],
+    additionalProperties: false,
   },
 };
 
