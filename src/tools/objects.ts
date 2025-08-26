@@ -51,7 +51,8 @@ export const objectTools = [
         space_id: { type: 'string', description: 'ID del espacio', required: true },
         name: { type: 'string', description: 'Nombre del objeto', required: true },
         type_key: { type: 'string', description: 'Tipo de objeto', default: 'page' },
-        markdown: { type: 'string', description: 'Contenido del objeto (Markdown)' },
+        body: { type: 'string', description: 'Contenido del objeto (Markdown)' },
+        markdown: { type: 'string', description: 'Contenido del objeto (Markdown) - alias para body' },
         icon: iconSchema,
         properties: objectPropertiesSchema,
         template_id: { type: 'string', description: 'ID de plantilla' },
@@ -61,14 +62,15 @@ export const objectTools = [
   },
   {
     name: 'anytype_update_object',
-    description: 'Actualiza un objeto existente',
+    description: 'Actualiza un objeto existente. IMPORTANTE: Para actualizaciones de contenido (body/markdown), utiliza una estrategia de reemplazo que crea un nuevo objeto con el contenido actualizado y elimina el original, ya que la API de Anytype no actualiza correctamente el contenido markdown con el método tradicional.',
     inputSchema: {
       type: 'object',
       properties: {
         space_id: { type: 'string', description: 'ID del espacio', required: true },
         object_id: { type: 'string', description: 'ID del objeto', required: true },
         name: { type: 'string', description: 'Nuevo nombre del objeto' },
-        markdown: { type: 'string', description: 'Nuevo contenido (Markdown)' },
+        body: { type: 'string', description: 'Nuevo contenido (Markdown) - Se aplicará estrategia de reemplazo' },
+        markdown: { type: 'string', description: 'Nuevo contenido (Markdown) - alias para body - Se aplicará estrategia de reemplazo' },
         icon: iconSchema,
         properties: objectPropertiesSchema,
       },

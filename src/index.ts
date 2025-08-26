@@ -8,7 +8,6 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
-import fetch from 'node-fetch';
 
 // Import tool modules
 import { spaceTools } from './tools/spaces.js';
@@ -18,47 +17,53 @@ import { typeTools } from './tools/types.js';
 import { tagTools } from './tools/tags.js';
 import { templateTools } from './tools/templates.js';
 
-// API configuration
-const API_BASE_URL = process.env.ANYTYPE_API_URL || 'http://localhost:31009';
-const API_VERSION = '2025-05-20';
+// Import handlers
+import {
+  handleListSpaces,
+  handleGetSpace,
+  handleCreateSpace,
+  handleUpdateSpace,
+  handleListMembers,
+  handleGetMember
+} from './handlers/spaces.js';
+
+import {
+  handleSearchObjects,
+  handleListObjects,
+  handleGetObject,
+  handleCreateObject,
+  handleUpdateObject,
+  handleDeleteObject,
+  handleAddToCollection,
+  handleRemoveFromCollection,
+  handleGetListViews,
+  handleGetListObjects
+} from './handlers/objects.js';
+
+import {
+  handleListProperties,
+  handleGetProperty,
+  handleCreateProperty,
+  handleUpdateProperty,
+  handleDeleteProperty
+} from './handlers/properties.js';
+
+import {
+  handleListTypes,
+  handleGetType,
+  handleCreateType,
+  handleUpdateType,
+  handleDeleteType,
+  handleListTags,
+  handleGetTag,
+  handleCreateTag,
+  handleUpdateTag,
+  handleDeleteTag,
+  handleListTemplates,
+  handleGetTemplate
+} from './handlers/types-tags.js';
+
 console.error('API Key:', process.env.ANYTYPE_API_KEY ? 'Present' : 'Missing');
-
-// Helper function for API requests
-async function makeRequest(endpoint: string, options: any = {}): Promise<any> {
-  const apiKey = process.env.ANYTYPE_API_KEY;
-  if (!apiKey) {
-    throw new McpError(
-      ErrorCode.InvalidRequest,
-      'API key not configured. Set ANYTYPE_API_KEY environment variable.'
-    );
-  }
-
-  const url = `${API_BASE_URL}${endpoint}`;
-  console.error('Request URL:', url);
-  
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-      'Anytype-Version': API_VERSION,
-      ...options.headers,
-    },
-  });
-
-  console.error('Response status:', response.status);
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error('API Error:', errorText);
-    throw new McpError(
-      ErrorCode.InternalError,
-      `API request failed: ${response.status} ${response.statusText} - ${errorText}`
-    );
-  }
-
-  return await response.json();
-}
 
 // Create the server
 const server = new Server(
@@ -96,241 +101,82 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     switch (name) {
       // Spaces
-      case 'anytype_list_spaces': {
-        const response = await makeRequest('/v1/spaces');
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_space': {
-        const { space_id } = args as { space_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_create_space': {
-        const response = await makeRequest('/v1/spaces', {
-          method: 'POST',
-          body: JSON.stringify(args),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_update_space': {
-        const { space_id, ...updateData } = args as { space_id: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}`, {
-          method: 'PATCH',
-          body: JSON.stringify(updateData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_list_members': {
-        const { space_id, limit = 20, offset = 0 } = args as { space_id: string; limit?: number; offset?: number };
-        const response = await makeRequest(`/v1/spaces/${space_id}/members?limit=${limit}&offset=${offset}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_member': {
-        const { space_id, member_id } = args as { space_id: string; member_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/members/${member_id}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
+      case 'anytype_list_spaces':
+        return await handleListSpaces();
+      case 'anytype_get_space':
+        return await handleGetSpace(args);
+      case 'anytype_create_space':
+        return await handleCreateSpace(args);
+      case 'anytype_update_space':
+        return await handleUpdateSpace(args);
+      case 'anytype_list_members':
+        return await handleListMembers(args);
+      case 'anytype_get_member':
+        return await handleGetMember(args);
 
       // Objects
-      case 'anytype_search_objects': {
-        const { query, space_id, types, limit = 20 } = args as {
-          query: string;
-          space_id?: string;
-          types?: string[];
-          limit?: number;
-        };
-        const response = await makeRequest('/v1/object/search', {
-          method: 'POST',
-          body: JSON.stringify({ query, space_id, types, limit }),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_list_objects': {
-        const { space_id, limit = 20, offset = 0 } = args as { space_id: string; limit?: number; offset?: number };
-        const response = await makeRequest(`/v1/spaces/${space_id}/objects?limit=${limit}&offset=${offset}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_object': {
-        const { space_id, object_id } = args as { space_id: string; object_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/objects/${object_id}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_create_object': {
-        const { space_id, ...objectData } = args as { space_id: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}/objects`, {
-          method: 'POST',
-          body: JSON.stringify(objectData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_update_object': {
-        const { space_id, object_id, ...updateData } = args as { space_id: string; object_id: string; [key: string]: any };
-        
-        // Filtrar campos undefined/null para enviar solo lo que se quiere actualizar
-        const payload = Object.fromEntries(
-          Object.entries(updateData).filter(([_, value]) => value !== undefined && value !== null)
-        );
-        
-        const response = await makeRequest(`/v1/spaces/${space_id}/objects/${object_id}`, {
-          method: 'PATCH',
-          body: JSON.stringify(payload),
-        });
-        return { content: [{ type: 'text', text: `Objeto actualizado exitosamente:\n\n${JSON.stringify(response.object || response, null, 2)}` }] };
-      }
-      case 'anytype_delete_object': {
-        const { space_id, object_id } = args as { space_id: string; object_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/objects/${object_id}`, {
-          method: 'DELETE',
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
+      case 'anytype_search_objects':
+        return await handleSearchObjects(args);
+      case 'anytype_list_objects':
+        return await handleListObjects(args);
+      case 'anytype_get_object':
+        return await handleGetObject(args);
+      case 'anytype_create_object':
+        return await handleCreateObject(args);
+      case 'anytype_update_object':
+        return await handleUpdateObject(args);
+      case 'anytype_delete_object':
+        return await handleDeleteObject(args);
 
       // Properties
-      case 'anytype_list_properties': {
-        const { space_id, limit = 20, offset = 0 } = args as { space_id: string; limit?: number; offset?: number };
-        const response = await makeRequest(`/v1/spaces/${space_id}/properties?limit=${limit}&offset=${offset}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_property': {
-        const { space_id, property_id } = args as { space_id: string; property_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_create_property': {
-        const { space_id, ...propertyData } = args as { space_id: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}/properties`, {
-          method: 'POST',
-          body: JSON.stringify(propertyData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_update_property': {
-        const { space_id, property_id, ...updateData } = args as { space_id: string; property_id: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}`, {
-          method: 'PATCH',
-          body: JSON.stringify(updateData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_delete_property': {
-        const { space_id, property_id } = args as { space_id: string; property_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}`, {
-          method: 'DELETE',
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
+      case 'anytype_list_properties':
+        return await handleListProperties(args);
+      case 'anytype_get_property':
+        return await handleGetProperty(args);
+      case 'anytype_create_property':
+        return await handleCreateProperty(args);
+      case 'anytype_update_property':
+        return await handleUpdateProperty(args);
+      case 'anytype_delete_property':
+        return await handleDeleteProperty(args);
 
       // Types
-      case 'anytype_list_types': {
-        const { space_id } = args as { space_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/types`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_type': {
-        const { space_id, type_id } = args as { space_id: string; type_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/types/${type_id}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_create_type': {
-        const { space_id, ...typeData } = args as { space_id: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}/types`, {
-          method: 'POST',
-          body: JSON.stringify(typeData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_update_type': {
-        const { space_id, type_id, ...updateData } = args as { space_id: string; type_id: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}/types/${type_id}`, {
-          method: 'PATCH',
-          body: JSON.stringify(updateData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_delete_type': {
-        const { space_id, type_id } = args as { space_id: string; type_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/types/${type_id}`, {
-          method: 'DELETE',
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
+      case 'anytype_list_types':
+        return await handleListTypes(args);
+      case 'anytype_get_type':
+        return await handleGetType(args);
+      case 'anytype_create_type':
+        return await handleCreateType(args);
+      case 'anytype_update_type':
+        return await handleUpdateType(args);
+      case 'anytype_delete_type':
+        return await handleDeleteType(args);
 
       // Tags
-      case 'anytype_list_tags': {
-        const { space_id, property_key, limit = 20, offset = 0 } = args as { space_id: string; property_key: string; limit?: number; offset?: number };
-        const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_key}/tags?limit=${limit}&offset=${offset}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_tag': {
-        const { space_id, tag_id } = args as { space_id: string; tag_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/tags/${tag_id}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_create_tag': {
-        const { space_id, property_key, ...tagData } = args as { space_id: string; property_key: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_key}/tags`, {
-          method: 'POST',
-          body: JSON.stringify(tagData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_update_tag': {
-        const { space_id, tag_id, ...updateData } = args as { space_id: string; tag_id: string; [key: string]: any };
-        const response = await makeRequest(`/v1/spaces/${space_id}/tags/${tag_id}`, {
-          method: 'PATCH',
-          body: JSON.stringify(updateData),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_delete_tag': {
-        const { space_id, tag_id } = args as { space_id: string; tag_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/tags/${tag_id}`, {
-          method: 'DELETE',
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
+      case 'anytype_list_tags':
+        return await handleListTags(args);
+      case 'anytype_get_tag':
+        return await handleGetTag(args);
+      case 'anytype_create_tag':
+        return await handleCreateTag(args);
+      case 'anytype_update_tag':
+        return await handleUpdateTag(args);
+      case 'anytype_delete_tag':
+        return await handleDeleteTag(args);
 
       // Templates
-      case 'anytype_list_templates': {
-        const { space_id, type_id, limit = 20, offset = 0 } = args as { space_id: string; type_id?: string; limit?: number; offset?: number };
-        const queryParams = new URLSearchParams({ limit: limit.toString(), offset: offset.toString() });
-        if (type_id) queryParams.append('type_id', type_id);
-        const response = await makeRequest(`/v1/spaces/${space_id}/templates?${queryParams}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_template': {
-        const { space_id, template_id } = args as { space_id: string; template_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/templates/${template_id}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_add_to_collection': {
-        const { space_id, collection_id, object_id } = args as { space_id: string; collection_id: string; object_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/collections/${collection_id}/objects`, {
-          method: 'POST',
-          body: JSON.stringify({ object_id }),
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_remove_from_collection': {
-        const { space_id, collection_id, object_id } = args as { space_id: string; collection_id: string; object_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/collections/${collection_id}/objects/${object_id}`, {
-          method: 'DELETE',
-        });
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_list_views': {
-        const { space_id, list_id } = args as { space_id: string; list_id: string };
-        const response = await makeRequest(`/v1/spaces/${space_id}/lists/${list_id}/views`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
-      case 'anytype_get_list_objects': {
-        const { space_id, list_id, view_id, limit, offset } = args as { space_id: string; list_id: string; view_id: string; limit?: number; offset?: number };
-        const queryParams = new URLSearchParams({ view_id });
-        if (limit) queryParams.append('limit', limit.toString());
-        if (offset) queryParams.append('offset', offset.toString());
-        const response = await makeRequest(`/v1/spaces/${space_id}/lists/${list_id}/objects?${queryParams}`);
-        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-      }
+      case 'anytype_list_templates':
+        return await handleListTemplates(args);
+      case 'anytype_get_template':
+        return await handleGetTemplate(args);
+      case 'anytype_add_to_collection':
+        return await handleAddToCollection(args);
+      case 'anytype_remove_from_collection':
+        return await handleRemoveFromCollection(args);
+      case 'anytype_get_list_views':
+        return await handleGetListViews(args);
+      case 'anytype_get_list_objects':
+        return await handleGetListObjects(args);
 
       default:
         throw new McpError(
