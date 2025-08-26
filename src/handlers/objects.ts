@@ -1,13 +1,58 @@
 import { makeRequest, buildNewObjectData, AnytypeApiError } from '../utils.js';
 
 /**
- * Search objects across spaces
+ * Search objects globally or within a specific space
+ * Fixed based on Context7 API documentation
  */
 export async function handleSearchObjects(args: any) {
-  const { query, space_id, types, limit = 20 } = args;
-  const response = await makeRequest('/v1/object/search', {
+  const { space_id, query, types, limit = 20, offset = 0 } = args;
+  
+  let endpoint;
+  let requestBody: any;
+  
+  if (space_id) {
+    // Search within a specific space
+    endpoint = `/v1/spaces/${space_id}/search?offset=${offset}&limit=${limit}`;
+    
+    // For space search, use property_key and no "ot-" prefix
+    requestBody = {
+      query: query || '',
+      sort: {
+        direction: 'desc',
+        property_key: 'last_modified_date'
+      }
+    };
+    
+    // Process types for space search (no "ot-" prefix)
+    if (types && types.length > 0) {
+      requestBody.types = types.map((type: string) => 
+        type.startsWith('ot-') ? type.substring(3) : type
+      );
+    }
+  } else {
+    // Global search across all spaces
+    endpoint = `/v1/search?offset=${offset}&limit=${limit}`;
+    
+    // For global search, use property and "ot-" prefix for types
+    requestBody = {
+      query: query || '',
+      sort: {
+        direction: 'desc',
+        property: 'last_modified_date'
+      }
+    };
+    
+    // Process types for global search (add "ot-" prefix if not present)
+    if (types && types.length > 0) {
+      requestBody.types = types.map((type: string) => 
+        type.startsWith('ot-') ? type : `ot-${type}`
+      );
+    }
+  }
+  
+  const response = await makeRequest(endpoint, {
     method: 'POST',
-    body: JSON.stringify({ query, space_id, types, limit }),
+    body: JSON.stringify(requestBody),
   });
   return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
 }
@@ -141,25 +186,38 @@ export async function handleDeleteObject(args: any) {
 
 /**
  * Add object to collection
+ * NOTE: Collection endpoints are not available in the official Anytype API
+ * This function is disabled until official support is added
  */
 export async function handleAddToCollection(args: any) {
-  const { space_id, collection_id, object_id } = args;
-  const response = await makeRequest(`/v1/spaces/${space_id}/collections/${collection_id}/objects`, {
-    method: 'POST',
-    body: JSON.stringify({ object_id }),
-  });
-  return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  return { 
+    content: [{ 
+      type: 'text', 
+      text: JSON.stringify({
+        error: 'Collection endpoints are not available in the official Anytype API',
+        message: 'The /collections endpoints are not documented in the official API. Use object relationships instead.',
+        status: 'not_implemented'
+      }, null, 2) 
+    }] 
+  };
 }
 
 /**
  * Remove object from collection
+ * NOTE: Collection endpoints are not available in the official Anytype API
+ * This function is disabled until official support is added
  */
 export async function handleRemoveFromCollection(args: any) {
-  const { space_id, collection_id, object_id } = args;
-  const response = await makeRequest(`/v1/spaces/${space_id}/collections/${collection_id}/objects/${object_id}`, {
-    method: 'DELETE',
-  });
-  return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  return { 
+    content: [{ 
+      type: 'text', 
+      text: JSON.stringify({
+        error: 'Collection endpoints are not available in the official Anytype API',
+        message: 'The /collections endpoints are not documented in the official API. Use object relationships instead.',
+        status: 'not_implemented'
+      }, null, 2) 
+    }] 
+  };
 }
 
 /**

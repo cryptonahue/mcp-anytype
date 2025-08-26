@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -16,6 +17,7 @@ import { propertyTools } from './tools/properties.js';
 import { typeTools } from './tools/types.js';
 import { tagTools } from './tools/tags.js';
 import { templateTools } from './tools/templates.js';
+import { listTools } from './tools/lists.js';
 
 // Import handlers
 import {
@@ -86,6 +88,7 @@ const tools = [
   ...typeTools,
   ...tagTools,
   ...templateTools,
+  ...listTools,
 ];
 
 // List available tools
@@ -169,14 +172,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return await handleListTemplates(args);
       case 'anytype_get_template':
         return await handleGetTemplate(args);
-      case 'anytype_add_to_collection':
-        return await handleAddToCollection(args);
-      case 'anytype_remove_from_collection':
-        return await handleRemoveFromCollection(args);
+
+      // Lists (reemplazan las colecciones)
       case 'anytype_get_list_views':
         return await handleGetListViews(args);
       case 'anytype_get_list_objects':
         return await handleGetListObjects(args);
+
+      // Colecciones (DEPRECATED - usar listas en su lugar)
+      case 'anytype_add_to_collection':
+        return await handleAddToCollection(args);
+      case 'anytype_remove_from_collection':
+        return await handleRemoveFromCollection(args);
 
       default:
         throw new McpError(
