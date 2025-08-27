@@ -1,38 +1,37 @@
 {
-  "name": "my-mcp-anytype",
-  "version": "1.0.0",
-  "description": "Custom MCP server for Anytype with full support for object updates",
+  "name": "anytype-mcp-server",
+  "version": "0.1.0",
   "type": "module",
+  "description": "MCP Server for Anytype integration",
   "main": "dist/index.js",
   "bin": {
-    "my-mcp-anytype": "dist/index.js"
+    "anytype-mcp-server": "dist/index.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
-    "prepare": "npm run build"
+    "dev:watch": "tsx watch src/index.ts",
+    "prepare": "pnpm run build",
+    "clean": "rimraf dist",
+    "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "anytype",
-    "mcp",
-    "model-context-protocol",
-    "knowledge-management"
-  ],
-  "author": "Your Name",
-  "license": "MIT",
+  "keywords": ["mcp", "anytype", "server"],
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "axios": "^1.11.0",
-    "dotenv": "^17.2.1",
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "@types/node": "^22.10.2",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   }
 }

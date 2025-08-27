@@ -13,22 +13,15 @@ services:
       - NODE_ENV=production
     env_file:
       - .env
-    # Network mode to access host services (Anytype running on host)
     network_mode: host
-    # Alternative: use external network if Anytype is also containerized
-    # networks:
-    #   - anytype-network
     volumes:
-      # Mount logs directory (optional)
       - ./logs:/app/logs
-    # Health check
     healthcheck:
-      test: ["CMD", "node", "--version"]
+      test: ["CMD", "pnpm", "--version"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    # Resource limits
     deploy:
       resources:
         limits:

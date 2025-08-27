@@ -3,6 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF)](https://vitejs.dev/)
+[![pnpm](https://img.shields.io/badge/pnpm-8.0+-F69220)](https://pnpm.io/)
 
 A comprehensive Model Context Protocol (MCP) server for seamless integration with the Anytype knowledge management platform. This server provides a complete set of tools for managing spaces, objects, properties, types, tags, and templates through the Anytype API.
 
@@ -16,18 +18,59 @@ A comprehensive Model Context Protocol (MCP) server for seamless integration wit
 - **Tag Management**: Organize content with tags and multi-select properties
 - **Template Support**: Access and utilize Anytype templates
 - **Collection & List Operations**: Manage collections and lists with proper view handling
+- **Modern Development**: Built with Vite for fast development and optimized builds
+- **Package Management**: Uses pnpm for efficient dependency management
 - **TypeScript Support**: Fully typed for enhanced developer experience
 - **Modular Architecture**: Clean, maintainable code structure
 
 ## 📋 Prerequisites
 
 - Node.js 18.0.0 or higher
+- pnpm 8.0.0 or higher (recommended) or npm
 - Anytype application running locally
 - Valid Anytype API key
 
 ## 🛠️ Installation
 
-### Option 1: Local Installation
+### Option 1: Local Installation (Recommended - pnpm)
+
+1. **Install pnpm globally** (if not already installed)
+   ```bash
+   npm install -g pnpm
+   ```
+
+2. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd my-mcp-anytype
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
+
+4. **Configure environment variables**
+   ```bash
+   # Copy the example file
+   cp .env.example .env
+   
+   # Edit .env with your actual values
+   # ANYTYPE_API_KEY=your-actual-api-key
+   # ANYTYPE_BASE_URL=http://localhost:31009
+   ```
+
+5. **Build the project**
+   ```bash
+   pnpm build
+   ```
+
+6. **Start the server**
+   ```bash
+   pnpm start
+   ```
+
+### Option 2: Local Installation (npm)
 
 1. **Clone the repository**
    ```bash
@@ -60,7 +103,7 @@ A comprehensive Model Context Protocol (MCP) server for seamless integration wit
    npm start
    ```
 
-### Option 2: Docker Installation
+### Option 3: Docker Installation
 
 1. **Clone the repository**
    ```bash
@@ -108,6 +151,9 @@ A comprehensive Model Context Protocol (MCP) server for seamless integration wit
 |----------|-------------|---------|----------|
 | `ANYTYPE_API_KEY` | Your Anytype API key | - | ✅ |
 | `ANYTYPE_BASE_URL` | Anytype API base URL | `http://localhost:31009` | ❌ |
+| `MCP_PORT` | Port for MCP server | `3000` | ❌ |
+| `LOG_LEVEL` | Logging level | `info` | ❌ |
+| `REQUEST_TIMEOUT` | API request timeout (ms) | `30000` | ❌ |
 
 ### Getting Your API Key
 
@@ -116,7 +162,99 @@ A comprehensive Model Context Protocol (MCP) server for seamless integration wit
 3. Generate or copy your API key
 4. Add it to your `.env` file
 
-## 🔧 Available Tools
+## 🔧 Vite & Modern Development Tools
+
+This project uses modern development tools for optimal developer experience:
+
+### Vite Benefits
+- **⚡ Lightning Fast**: Instant server start and HMR
+- **📦 Optimized Builds**: Efficient bundling with Rollup
+- **🔧 Zero Config**: Works out of the box with sensible defaults
+- **🎯 TypeScript Native**: First-class TypeScript support
+
+### Available Scripts
+
+```bash
+# Development
+pnpm dev          # Start development server with hot reload
+pnpm build        # Build for production using Vite
+pnpm preview      # Preview production build locally
+pnpm start        # Start the built MCP server
+
+# Utilities
+pnpm clean        # Clean build artifacts
+pnpm type-check   # Run TypeScript type checking
+pnpm prepare      # Pre-publish preparation
+
+# Docker
+docker-compose up --build  # Build and run with Docker
+```
+
+### pnpm Advantages
+- **💾 Disk Efficient**: Saves up to 50% disk space
+- **⚡ Faster Installs**: Up to 2x faster than npm
+- **🔒 Strict**: Better dependency resolution
+- **🌐 Monorepo Ready**: Built-in workspace support
+
+## 🔄 Special Object Update Method
+
+### Important: Object Recreation Pattern
+
+Due to Anytype API behavior, **updating object content requires a special approach**:
+
+#### The Challenge
+When updating objects in Anytype, simply patching properties may not reflect changes immediately in the UI due to caching and synchronization mechanisms.
+
+#### The Solution: Recreation Pattern
+
+```typescript
+// Instead of simple update:
+// PATCH /v1/spaces/{spaceId}/objects/{objectId}
+
+// Use this pattern:
+1. Get current object data
+2. Delete the existing object
+3. Create new object with updated content
+4. Return new object ID
+```
+
+#### Implementation Example
+
+```typescript
+async function updateObjectContent(spaceId: string, objectId: string, updates: any) {
+  // 1. Get current object
+  const currentObject = await getObject(spaceId, objectId);
+  
+  // 2. Merge updates with current data
+  const updatedData = {
+    ...currentObject,
+    ...updates,
+    // Preserve important metadata
+    type: currentObject.type,
+    createdDate: currentObject.createdDate
+  };
+  
+  // 3. Delete current object
+  await deleteObject(spaceId, objectId);
+  
+  // 4. Create new object with updated content
+  const newObject = await createObject(spaceId, updatedData);
+  
+  return newObject;
+}
+```
+
+#### When to Use This Pattern
+- ✅ **Content Updates**: When changing object text, descriptions, or main content
+- ✅ **Property Changes**: When modifying custom properties
+- ✅ **Type Changes**: When changing object type
+- ❌ **Simple Metadata**: For basic metadata updates, regular PATCH may suffice
+
+#### Important Considerations
+- **ID Changes**: The object will get a new ID after recreation
+- **References**: Update any references to the old object ID
+- **Permissions**: Ensure proper permissions for delete/create operations
+- **Backup**: Consider backing up important objects before updates
 
 ### Space Management
 

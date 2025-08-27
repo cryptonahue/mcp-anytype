@@ -32,7 +32,7 @@ function getAnytypePort(): string {
 }
 
 function getMCPPort(): string {
-  // El MCP server usa stdio, no un puerto HTTP específico
+  // MCP server uses stdio, not a specific HTTP port
   return 'stdio (standard input/output)';
 }
 
@@ -40,10 +40,10 @@ async function testAnytypeConnection(): Promise<{ success: boolean; message: str
   try {
     const response = await makeRequest('/v1/spaces');
     
-    // La respuesta puede ser un objeto con una propiedad que contiene el array
+    // Response might be an object with a property containing the array
     let spaces = response;
     if (response && typeof response === 'object' && !Array.isArray(response)) {
-      // Buscar el array de espacios en las propiedades del objeto
+      // Look for the spaces array in object properties
       const possibleArrays = Object.values(response).filter(Array.isArray);
       if (possibleArrays.length > 0) {
         spaces = possibleArrays[0];
@@ -53,31 +53,31 @@ async function testAnytypeConnection(): Promise<{ success: boolean; message: str
     if (Array.isArray(spaces)) {
       return {
         success: true,
-        message: 'Conexión exitosa',
+        message: 'Connection successful',
         spacesCount: spaces.length
       };
     } else if (response) {
       return {
         success: true,
-        message: 'Conexión exitosa (formato de respuesta no estándar)',
+        message: 'Connection successful (non-standard response format)',
         spacesCount: undefined
       };
     } else {
       return {
         success: false,
-        message: 'Respuesta vacía de la API'
+        message: 'Empty response from API'
       };
     }
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Error desconocido'
+      message: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 }
 
 function formatDateTime(): string {
-  return new Date().toLocaleString('es-ES', {
+  return new Date().toLocaleString('en-US', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -91,26 +91,26 @@ export async function displayStartupInfo(): Promise<void> {
   const packageInfo = getPackageInfo();
   const anytypePort = getAnytypePort();
   const mcpPort = getMCPPort();
-  const apiKeyStatus = process.env.ANYTYPE_API_KEY ? '✅ Presente' : '❌ Faltante';
+  const apiKeyStatus = process.env.ANYTYPE_API_KEY ? '✅ Present' : '❌ Missing';
   
   console.log('\n' + '='.repeat(60));
-  console.log('🚀 ANYTYPE MCP SERVER - INFORMACIÓN DE INICIO');
+  console.log('🚀 ANYTYPE MCP SERVER - STARTUP INFORMATION');
   console.log('='.repeat(60));
   
-  console.log(`📦 Nombre: ${packageInfo.name}`);
-  console.log(`🏷️  Versión: ${packageInfo.version}`);
-  console.log(`📝 Descripción: ${packageInfo.description}`);
-  console.log(`⏰ Iniciado: ${formatDateTime()}`);
+  console.log(`📦 Name: ${packageInfo.name}`);
+  console.log(`🏷️  Version: ${packageInfo.version}`);
+  console.log(`📝 Description: ${packageInfo.description}`);
+  console.log(`⏰ Started: ${formatDateTime()}`);
   
   console.log('\n' + '-'.repeat(40));
-  console.log('🔌 CONFIGURACIÓN DE PUERTOS');
+  console.log('🔌 PORT CONFIGURATION');
   console.log('-'.repeat(40));
   console.log(`🖥️  MCP Server: ${mcpPort}`);
   console.log(`🔗 Anytype API: localhost:${anytypePort}`);
   console.log(`🔑 API Key: ${apiKeyStatus}`);
   
   console.log('\n' + '-'.repeat(40));
-  console.log('🧪 PRUEBA DE CONECTIVIDAD');
+  console.log('🧪 CONNECTIVITY TEST');
   console.log('-'.repeat(40));
   
   const testResult = await testAnytypeConnection();
@@ -118,24 +118,24 @@ export async function displayStartupInfo(): Promise<void> {
   if (testResult.success) {
     console.log(`✅ Anytype API: ${testResult.message}`);
     if (testResult.spacesCount !== undefined) {
-      console.log(`📊 Espacios encontrados: ${testResult.spacesCount}`);
+      console.log(`📊 Spaces found: ${testResult.spacesCount}`);
     }
   } else {
     console.log(`❌ Anytype API: ${testResult.message}`);
   }
   
   console.log('\n' + '-'.repeat(40));
-  console.log('🛠️  HERRAMIENTAS DISPONIBLES');
+  console.log('🛠️  AVAILABLE TOOLS');
   console.log('-'.repeat(40));
-  console.log('📁 Espacios: list, get, create, update, members');
-  console.log('📄 Objetos: search, list, get, create, update, delete');
-  console.log('🏷️  Propiedades: list, get, create, update, delete');
-  console.log('🎯 Tipos: list, get, create, update, delete');
+  console.log('📁 Spaces: list, get, create, update, members');
+  console.log('📄 Objects: search, list, get, create, update, delete');
+  console.log('🏷️  Properties: list, get, create, update, delete');
+  console.log('🎯 Types: list, get, create, update, delete');
   console.log('🏷️  Tags: list, get, create, update, delete');
-  console.log('📋 Plantillas: list, get');
-  console.log('📝 Listas: get_views, get_objects');
+  console.log('📋 Templates: list, get');
+  console.log('📝 Lists: get_views, get_objects');
   
   console.log('\n' + '='.repeat(60));
-  console.log('✨ Servidor MCP listo para recibir conexiones');
+  console.log('✨ MCP Server ready to receive connections');
   console.log('='.repeat(60) + '\n');
 }
