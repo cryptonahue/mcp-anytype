@@ -2,7 +2,7 @@ import { makeRequest, buildNewObjectData, AnytypeApiError } from '../utils.js';
 
 /**
  * Search objects globally or within a specific space
- * Fixed based on Context7 API documentation
+ * Fixed based on official Anytype API documentation 2025-05-20
  */
 export async function handleSearchObjects(args: any) {
   const { space_id, query, types, limit = 20, offset = 0 } = args;
@@ -11,10 +11,10 @@ export async function handleSearchObjects(args: any) {
   let requestBody: any;
   
   if (space_id) {
-    // Search within a specific space
-    endpoint = `/spaces/${space_id}/search?offset=${offset}&limit=${limit}`;
+    // Search within a specific space - using correct API v1 endpoint
+    endpoint = `/v1/spaces/${space_id}/search?offset=${offset}&limit=${limit}`;
     
-    // For space search, use property_key and no "ot-" prefix
+    // For space search, use property_key according to API docs
     requestBody = {
       query: query || '',
       sort: {
@@ -23,30 +23,26 @@ export async function handleSearchObjects(args: any) {
       }
     };
     
-    // Process types for space search (no "ot-" prefix)
+    // Add types filter if provided (no prefix needed for space search)
     if (types && types.length > 0) {
-      requestBody.types = types.map((type: string) => 
-        type.startsWith('ot-') ? type.substring(3) : type
-      );
+      requestBody.types = types;
     }
   } else {
-    // Global search across all spaces
-    endpoint = `/search?offset=${offset}&limit=${limit}`;
+    // Global search across all spaces - using correct API v1 endpoint
+    endpoint = `/v1/search?offset=${offset}&limit=${limit}`;
     
-    // For global search, use property and "ot-" prefix for types
+    // For global search, use property_key according to API docs
     requestBody = {
       query: query || '',
       sort: {
         direction: 'desc',
-        property: 'last_modified_date'
+        property_key: 'last_modified_date'
       }
     };
     
-    // Process types for global search (add "ot-" prefix if not present)
+    // Add types filter if provided
     if (types && types.length > 0) {
-      requestBody.types = types.map((type: string) => 
-        type.startsWith('ot-') ? type : `ot-${type}`
-      );
+      requestBody.types = types;
     }
   }
   

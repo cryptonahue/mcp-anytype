@@ -117,3 +117,29 @@ Desktop.ini
 # Compiled output
 dist/
 build/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Application logs
+logs/
+*.log
+
+# Environment files
+.env.local
+.env.development
+.env.production
+
+# Temporary files
+temp/
+tmp/
+
+# Debug files
+debug_*.js
+test_*.js
+investigate_*.js
+
+# MCP specific
+.mcp/
+mcp-logs/

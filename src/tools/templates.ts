@@ -7,15 +7,15 @@ import { paginationSchema } from './schemas.js';
 export const templateTools = [
   {
     name: 'anytype_list_templates',
-    description: 'Lists all available templates',
+    description: 'Lists all available templates for a specific type',
     inputSchema: {
       type: 'object',
       properties: {
         space_id: { type: 'string', description: 'Space ID', required: true },
-        type_id: { type: 'string', description: 'Type ID to filter' },
+        type_id: { type: 'string', description: 'Type ID (required - templates are associated with types)', required: true },
         ...paginationSchema,
       },
-      required: ['space_id'],
+      required: ['space_id', 'type_id'],
     },
   },
   {
@@ -25,9 +25,10 @@ export const templateTools = [
       type: 'object',
       properties: {
         space_id: { type: 'string', description: 'Space ID', required: true },
+        type_id: { type: 'string', description: 'Type ID (required - templates are associated with types)', required: true },
         template_id: { type: 'string', description: 'Template ID', required: true },
       },
-      required: ['space_id', 'template_id'],
+      required: ['space_id', 'type_id', 'template_id'],
     },
   },
   {

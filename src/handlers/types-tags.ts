@@ -262,69 +262,53 @@ export async function handleDeleteTag(args: any) {
 
 // Templates
 /**
- * List templates in a space
- * Updated to handle different API versions and potential endpoint variations
+ * List templates for a specific type in a space
+ * Updated according to official Anytype API 2025-05-20 documentation
+ * Requires type_id as templates are associated with types
  */
 export async function handleListTemplates(args: any) {
-  const { space_id, type_id, limit = 20, offset = 0 } = args;
+  const { space_id, type_id, limit = 100, offset = 0 } = args;
   
-  // Build query parameters
-  const queryParams = new URLSearchParams({ 
-    limit: limit.toString(), 
-    offset: offset.toString() 
-  });
-  if (type_id) queryParams.append('type_id', type_id);
-  
-  // Try the primary endpoint first
-  try {
-    const response = await makeRequest(`/v1/spaces/${space_id}/templates?${queryParams}`);
-    return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
-  } catch (primaryError: any) {
-    console.error('Primary templates endpoint failed:', primaryError?.message || String(primaryError));
-    
-    // Try alternative endpoints if the primary fails
-    const alternativeEndpoints = [
-      `/v1/templates?space_id=${space_id}&${queryParams}`,
-      `/v1/spaces/${space_id}/object-templates?${queryParams}`,
-      `/v1/spaces/${space_id}/page-templates?${queryParams}`
-    ];
-    
-    for (const endpoint of alternativeEndpoints) {
-      try {
-        const response = await makeRequest(endpoint);
-        return { 
-          content: [{ 
-            type: 'text', 
-            text: JSON.stringify({
-              message: `Templates found using alternative endpoint: ${endpoint}`,
-              data: response,
-              note: "Primary endpoint /v1/spaces/{space_id}/templates failed, using alternative"
-            }, null, 2) 
-          }] 
-        };
-      } catch (altError: any) {
-        console.error(`Alternative endpoint ${endpoint} also failed:`, altError?.message || String(altError));
-      }
-    }
-    
-    // If all endpoints fail, return informative error
+  // type_id is required according to official API docs
+  if (!type_id) {
     return { 
       content: [{ 
         type: 'text', 
         text: JSON.stringify({
-          error: 'Templates endpoint not available',
-          message: 'The templates endpoint may not be supported in your Anytype version or configuration',
-          attempted_endpoints: [
-            `/v1/spaces/${space_id}/templates`,
-            ...alternativeEndpoints
-          ],
-          primary_error: primaryError?.message || String(primaryError),
+          error: 'Missing required parameter',
+          message: 'Field "type_id" is required for listing templates',
+          provided_parameters: Object.keys(args),
+          note: 'Templates are associated with specific types in Anytype API 2025-05-20'
+        }, null, 2) 
+      }] 
+    };
+  }
+  
+  // Build query parameters according to official API docs
+  const queryParams = new URLSearchParams({ 
+    limit: limit.toString(), 
+    offset: offset.toString() 
+  });
+  
+  // Use the correct endpoint according to official API documentation
+  try {
+    const response = await makeRequest(`/v1/spaces/${space_id}/types/${type_id}/templates?${queryParams}`);
+    return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  } catch (error: any) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Templates endpoint error',
+          message: 'Failed to list templates using official API endpoint',
+          endpoint: `/v1/spaces/${space_id}/types/${type_id}/templates`,
+          error_details: error?.message || String(error),
           suggestions: [
-            'Check if your Anytype instance supports templates API',
-            'Verify API version compatibility',
-            'Use types endpoint instead - some template functionality may be available through object types'
-          ],
-          workaround: 'Try using the anytype_list_types function instead'
+            'Verify that the type_id exists in this space',
+            'Check if templates are available for this type',
+            'Ensure API permissions for template access',
+            'Verify both space_id and type_id are correct'
+          ]
         }, null, 2) 
       }] 
     };
@@ -333,9 +317,47 @@ export async function handleListTemplates(args: any) {
 
 /**
  * Get a specific template
+ * Updated according to official Anytype API 2025-05-20 documentation
+ * Requires both type_id and template_id as templates are associated with types
  */
 export async function handleGetTemplate(args: any) {
-  const { space_id, template_id } = args;
-  const response = await makeRequest(`/v1/spaces/${space_id}/templates/${template_id}`);
-  return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  const { space_id, type_id, template_id } = args;
+  
+  // type_id is required according to official API docs
+  if (!type_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameter',
+          message: 'Field "type_id" is required for getting a template',
+          provided_parameters: Object.keys(args),
+          note: 'Templates are associated with specific types in Anytype API 2025-05-20'
+        }, null, 2) 
+      }] 
+    };
+  }
+  
+  try {
+    const response = await makeRequest(`/v1/spaces/${space_id}/types/${type_id}/templates/${template_id}`);
+    return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+  } catch (error: any) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Template retrieval error',
+          message: 'Failed to get template using official API endpoint',
+          endpoint: `/v1/spaces/${space_id}/types/${type_id}/templates/${template_id}`,
+          error_details: error?.message || String(error),
+          suggestions: [
+            'Verify that the type_id exists in this space',
+            'Verify that the template_id exists for this type',
+            'Check API permissions for template access',
+            'Ensure space_id, type_id, and template_id are all correct'
+          ]
+        }, null, 2) 
+      }] 
+    };
+  }
 }

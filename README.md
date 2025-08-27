@@ -1,268 +1,352 @@
-# Custom Anytype MCP Server
+# Anytype MCP Server
 
-A custom MCP (Model Context Protocol) server for interacting with the Anytype API, featuring extended functionality and an improved modular structure.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue)](https://www.typescriptlang.org/)
 
-## Features
+A comprehensive Model Context Protocol (MCP) server for seamless integration with the Anytype knowledge management platform. This server provides a complete set of tools for managing spaces, objects, properties, types, tags, and templates through the Anytype API.
 
-- ✅ **Basic operations**: Create, read, update and delete objects
-- ✅ **Space management**: List and search within spaces
-- ✅ **Collection operations**: Add and remove objects from collections using official endpoints
-- ✅ **Advanced search**: Search objects by type, content and more
-- ✅ **Modular structure**: Code organized in separate modules
-- ✅ **TypeScript**: Strong typing for better development
-- 🚀 **Smart content updates**: Automatic detection of body update support
-- 🔄 **Backward compatibility**: Support for both `body` and `markdown` fields
-- 📊 **API monitoring**: Automatic script to detect new functionalities
+## 🚀 Features
 
-## Project Structure
+- **Complete API Coverage**: Full support for all Anytype API endpoints
+- **Space Management**: Create, update, and manage Anytype spaces
+- **Object Operations**: CRUD operations for objects with advanced search capabilities
+- **Property Management**: Dynamic property creation and management
+- **Type System**: Custom object types with full lifecycle management
+- **Tag Management**: Organize content with tags and multi-select properties
+- **Template Support**: Access and utilize Anytype templates
+- **Collection & List Operations**: Manage collections and lists with proper view handling
+- **TypeScript Support**: Fully typed for enhanced developer experience
+- **Modular Architecture**: Clean, maintainable code structure
 
-```
-src/
-├── utils.ts               # Utility functions and API configuration
-├── handlers/
-│   ├── spaces.ts          # Space and member management handlers
-│   ├── objects.ts         # Object operation handlers
-│   ├── properties.ts      # Property management handlers
-│   └── types-tags.ts      # Type, tag and template handlers
-└── index.ts               # Main entry point
-```
+## 📋 Prerequisites
 
-### Modules
+- Node.js 18.0.0 or higher
+- Anytype application running locally
+- Valid Anytype API key
 
-#### `utils.ts`
-Contains utility functions and API configuration:
-- HTTP request helper functions
-- System property filtering
-- Object data building utilities
-- Custom error classes
+## 🛠️ Installation
 
-#### `handlers/spaces.ts`
-Contains functions for space and member management:
-- List and get spaces
-- Create and update spaces
-- List and get members
+### Option 1: Local Installation
 
-#### `handlers/objects.ts`
-Contains functions for object operations:
-- Search, list, get, create, update and delete objects
-- Collection management (add/remove objects)
-- List views and objects handling
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd my-mcp-anytype
+   ```
 
-#### `handlers/properties.ts`
-Contains functions for property management:
-- List, get, create, update and delete properties
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-#### `handlers/types-tags.ts`
-Contains functions for types, tags and templates:
-- Type management operations
-- Tag management operations
-- Template listing and retrieval
+3. **Configure environment variables**
+   ```bash
+   # Copy the example file
+   cp .env.example .env
+   
+   # Edit .env with your actual values
+   # ANYTYPE_API_KEY=your-actual-api-key
+   # ANYTYPE_BASE_URL=http://localhost:31009
+   ```
 
-## Configuration
+4. **Build the project**
+   ```bash
+   npm run build
+   ```
+
+5. **Start the server**
+   ```bash
+   npm start
+   ```
+
+### Option 2: Docker Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd my-mcp-anytype
+   ```
+
+2. **Configure environment variables**
+   ```bash
+   # Copy and edit the environment file
+   cp .env.example .env
+   # Edit .env with your actual Anytype API key
+   ```
+
+3. **Run with Docker Compose**
+   ```bash
+   # Build and start the container
+   docker-compose up -d
+   
+   # View logs
+   docker-compose logs -f
+   
+   # Stop the container
+   docker-compose down
+   ```
+
+4. **Or run with Docker directly**
+   ```bash
+   # Build the image
+   docker build -t anytype-mcp .
+   
+   # Run the container
+   docker run -d \
+     --name anytype-mcp-server \
+     --network host \
+     --env-file .env \
+     anytype-mcp
+   ```
+
+## ⚙️ Configuration
 
 ### Environment Variables
 
-```bash
-ANYTYPE_API_KEY=your-api-key-here
-ANYTYPE_BASE_URL=http://localhost:31009  # Optional, defaults to localhost
-```
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `ANYTYPE_API_KEY` | Your Anytype API key | - | ✅ |
+| `ANYTYPE_BASE_URL` | Anytype API base URL | `http://localhost:31009` | ❌ |
 
-### Installation
+### Getting Your API Key
 
-```bash
-# Install dependencies
-npm install
+1. Open Anytype application
+2. Navigate to Settings → Developer
+3. Generate or copy your API key
+4. Add it to your `.env` file
 
-# Compile TypeScript
-npm run build
-
-# Start server
-npm start
-```
-
-## Available Tools
+## 🔧 Available Tools
 
 ### Space Management
-- `anytype_list_spaces`: Lists all available spaces
+
+| Tool | Description |
+|------|-------------|
+| `anytype_list_spaces` | List all available spaces |
+| `anytype_get_space` | Get specific space details |
+| `anytype_create_space` | Create a new space |
+| `anytype_update_space` | Update existing space |
+| `anytype_list_members` | List space members |
+| `anytype_get_member` | Get specific member details |
 
 ### Object Operations
-- `anytype_search_objects`: Searches objects with advanced filters
-- `anytype_get_object`: Gets a specific object
-- `anytype_create_object`: Creates a new object
-- `anytype_update_object`: Updates an existing object
-- `anytype_delete_object`: Deletes (archives) an object
-- `anytype_list_objects`: Lists objects in a space
-- `anytype_list_types`: Lists available object types
 
-### Collection Operations
-- `anytype_add_to_collection`: Adds an object to a collection
-- `anytype_remove_from_collection`: Removes an object from a collection
+| Tool | Description |
+|------|-------------|
+| `anytype_search_objects` | Search objects with advanced filters |
+| `anytype_list_objects` | List objects in a space |
+| `anytype_get_object` | Get specific object details |
+| `anytype_create_object` | Create new object |
+| `anytype_update_object` | Update existing object |
+| `anytype_delete_object` | Delete (archive) object |
 
-## Used API Endpoints
+### Property Management
+
+| Tool | Description |
+|------|-------------|
+| `anytype_list_properties` | List all properties in a space |
+| `anytype_get_property` | Get specific property details |
+| `anytype_create_property` | Create new property |
+| `anytype_update_property` | Update existing property |
+| `anytype_delete_property` | Delete property |
+
+### Type Management
+
+| Tool | Description |
+|------|-------------|
+| `anytype_list_types` | List all object types |
+| `anytype_get_type` | Get specific type details |
+| `anytype_create_type` | Create new object type |
+| `anytype_update_type` | Update existing type |
+| `anytype_delete_type` | Delete object type |
+
+### Tag Management
+
+| Tool | Description |
+|------|-------------|
+| `anytype_list_tags` | List tags for a property |
+| `anytype_get_tag` | Get specific tag details |
+| `anytype_create_tag` | Create new tag |
+| `anytype_update_tag` | Update existing tag |
+| `anytype_delete_tag` | Delete tag |
+
+### Template Operations
+
+| Tool | Description |
+|------|-------------|
+| `anytype_list_templates` | List templates for a type |
+| `anytype_get_template` | Get specific template details |
+
+### Collection & List Operations
+
+| Tool | Description |
+|------|-------------|
+| `anytype_add_to_collection` | Add object to collection |
+| `anytype_remove_from_collection` | Remove object from collection |
+| `anytype_get_list_views` | Get available views for a list |
+| `anytype_get_list_objects` | Get objects from a list view |
+
+## 🏗️ Project Structure
+
+```
+src/
+├── index.ts                 # Main server entry point
+├── startup-info.ts          # Server startup information
+├── utils.ts                 # Utility functions and API helpers
+├── handlers/                # Request handlers
+│   ├── spaces.ts           # Space and member operations
+│   ├── objects.ts          # Object CRUD operations
+│   ├── properties.ts       # Property management
+│   └── types-tags.ts       # Types, tags, and templates
+└── tools/                   # MCP tool definitions
+    ├── spaces.ts           # Space tool schemas
+    ├── objects.ts          # Object tool schemas
+    ├── properties.ts       # Property tool schemas
+    ├── types.ts            # Type tool schemas
+    ├── tags.ts             # Tag tool schemas
+    ├── templates.ts        # Template tool schemas
+    ├── lists.ts            # List tool schemas
+    └── schemas.ts          # Common schemas
+```
+
+## 🔌 API Endpoints
+
+This MCP server interfaces with the following Anytype API endpoints:
 
 ### Spaces
-- `GET /api/v0/spaces` - Lists spaces
-- `GET /api/v0/spaces/{id}` - Gets specific space
-- `POST /api/v0/spaces` - Creates new space
-- `PATCH /api/v0/spaces/{id}` - Updates space
-- `GET /api/v0/spaces/{id}/members` - Lists members
-- `GET /api/v0/spaces/{id}/members/{memberId}` - Gets specific member
+- `GET /v1/spaces` - List spaces
+- `GET /v1/spaces/{id}` - Get space
+- `POST /v1/spaces` - Create space
+- `PATCH /v1/spaces/{id}` - Update space
+- `GET /v1/spaces/{id}/members` - List members
 
 ### Objects
-- `POST /api/v0/spaces/{id}/search` - Searches objects
-- `GET /api/v0/spaces/{id}/objects` - Lists objects
-- `GET /api/v0/spaces/{id}/objects/{objectId}` - Gets object
-- `POST /api/v0/spaces/{id}/objects` - Creates object
-- `PATCH /api/v0/spaces/{id}/objects/{objectId}` - Updates object
-- `DELETE /api/v0/spaces/{id}/objects/{objectId}` - Deletes object
+- `POST /v1/search` - Global search
+- `POST /v1/spaces/{id}/search` - Space search
+- `GET /v1/spaces/{id}/objects` - List objects
+- `GET /v1/spaces/{id}/objects/{objectId}` - Get object
+- `POST /v1/spaces/{id}/objects` - Create object
+- `PATCH /v1/spaces/{id}/objects/{objectId}` - Update object
+- `DELETE /v1/spaces/{id}/objects/{objectId}` - Delete object
 
 ### Properties
-- `GET /api/v0/spaces/{id}/properties` - Lists properties
-- `GET /api/v0/spaces/{id}/properties/{propertyId}` - Gets property
-- `POST /api/v0/spaces/{id}/properties` - Creates property
-- `PATCH /api/v0/spaces/{id}/properties/{propertyId}` - Updates property
-- `DELETE /api/v0/spaces/{id}/properties/{propertyId}` - Deletes property
+- `GET /v1/spaces/{id}/properties` - List properties
+- `POST /v1/spaces/{id}/properties` - Create property
+- `PATCH /v1/spaces/{id}/properties/{propertyId}` - Update property
+- `DELETE /v1/spaces/{id}/properties/{propertyId}` - Delete property
 
 ### Types
-- `GET /api/v0/spaces/{id}/types` - Lists types
-- `GET /api/v0/spaces/{id}/types/{typeId}` - Gets type
-- `POST /api/v0/spaces/{id}/types` - Creates type
-- `PATCH /api/v0/spaces/{id}/types/{typeId}` - Updates type
-- `DELETE /api/v0/spaces/{id}/types/{typeId}` - Deletes type
-
-### Tags
-- `GET /api/v0/spaces/{id}/properties/{propertyKey}/tags` - Lists tags
-- `GET /api/v0/spaces/{id}/tags/{tagId}` - Gets tag
-- `POST /api/v0/spaces/{id}/properties/{propertyKey}/tags` - Creates tag
-- `PATCH /api/v0/spaces/{id}/tags/{tagId}` - Updates tag
-- `DELETE /api/v0/spaces/{id}/tags/{tagId}` - Deletes tag
+- `GET /v1/spaces/{id}/types` - List types
+- `POST /v1/spaces/{id}/types` - Create type
+- `PATCH /v1/spaces/{id}/types/{typeId}` - Update type
+- `DELETE /v1/spaces/{id}/types/{typeId}` - Delete type
 
 ### Templates
-- `GET /api/v0/spaces/{id}/templates` - Lists templates
-- `GET /api/v0/spaces/{id}/templates/{templateId}` - Gets template
+- `GET /v1/spaces/{id}/types/{typeId}/templates` - List templates
+- `GET /v1/spaces/{id}/types/{typeId}/templates/{templateId}` - Get template
 
-### Collections
-- `POST /api/v0/spaces/{id}/collections/{collectionId}/objects` - Adds to collection
-- `DELETE /api/v0/spaces/{id}/collections/{collectionId}/objects/{objectId}` - Removes from collection
-- `GET /api/v0/spaces/{id}/lists/{listId}/views` - Gets list views
-- `POST /api/v0/spaces/{id}/lists/{listId}/views/{viewId}/objects` - Gets list objects
+## 🐳 Docker Support
 
-## Implemented Improvements
+### Why Docker?
 
-### Modular Structure
-- **Separation of concerns**: API client, MCP services and types separated
-- **Maintainability**: Code easier to maintain and extend
-- **Reusability**: Reusable components
-- **Testing**: Structure that facilitates unit testing
+- **Consistent Environment**: Ensures the same runtime across different systems
+- **Easy Deployment**: Simple containerized deployment
+- **Isolation**: Runs in an isolated environment
+- **Scalability**: Easy to scale and manage
 
-### Official Endpoints
-- **Collections**: Use of official endpoints for list operations
-- **Compatibility**: Aligned with official Anytype API
-- **Stability**: Less prone to API changes
+### Docker Configuration
 
-## Development
+The project includes:
+- `Dockerfile`: Multi-stage build with security best practices
+- `docker-compose.yml`: Complete orchestration setup
+- `.dockerignore`: Optimized build context
+- Health checks and resource limits
+
+### Network Considerations
+
+**Host Network Mode** (Recommended):
+```yaml
+network_mode: host
+```
+This allows the container to access Anytype running on the host machine.
+
+**Bridge Network Mode** (Alternative):
+If Anytype is also containerized, use a custom network:
+```yaml
+networks:
+  - anytype-network
+```
+
+### Environment Variables in Docker
+
+The container uses the same environment variables as the local installation:
+- `ANYTYPE_API_KEY`: Your API key
+- `ANYTYPE_BASE_URL`: Defaults to `http://host.docker.internal:31009` in Docker
+
+## 🚀 Development
 
 ### Available Scripts
 
 ```bash
-npm run build    # Compile TypeScript
-npm start        # Start server
-npm run dev      # Development mode (if configured)
+npm run build    # Compile TypeScript to JavaScript
+npm start        # Start the MCP server
+npm run dev      # Development mode with tsx
+npm run prepare  # Pre-publish build step
 ```
 
-### Agregar Nuevas Funcionalidades
+### Docker Development
 
-1. **Nuevos endpoints**: Agregar métodos en `AnytypeApiClient`
-2. **Nuevas herramientas MCP**: Agregar métodos en `McpAnytypeService`
-3. **Nuevos tipos**: Definir interfaces en `types/index.ts`
-4. **Registrar herramienta**: Actualizar `index.ts` con la nueva herramienta
+```bash
+# Development with Docker
+docker-compose -f docker-compose.yml up --build
 
-## Current Status
+# View logs in real-time
+docker-compose logs -f anytype-mcp
 
-The MCP server is working correctly with the following capabilities:
-
-- ✅ **Space management**: List, get, create and update spaces
-- ✅ **Object management**: Create, list, get and update objects
-- ✅ **Name updates**: Object names are updated correctly
-- ⚠️ **Content updates**: Specific behavior of the Anytype API documented
-- ✅ **Property management**: Create, list, get, update and delete properties
-- ✅ **Type management**: Create, list, get, update and delete object types
-- ✅ **Tag management**: Create, list, get, update and delete tags
-- ✅ **Template management**: List and get templates
-- ✅ **Collection management**: Add and remove objects from collections
-- ✅ **List management**: Get views and objects from lists
-
-### Anytype API Behavior for Content Updates
-
-**Important Finding**: The Anytype API has specific behavior when updating object content:
-
-- ✅ **Object creation**: The `body` field is set correctly when creating new objects
-- ✅ **Name updates**: Names are updated without issues
-- ⚠️ **Content updates**: When updating the `body` of an existing object, the API adds the new title to existing content instead of completely replacing it
-
-**Observed behavior**:
-- The server correctly sends the `body` field with new content
-- The API processes the request successfully (status 200)
-- The object name is updated correctly
-- The markdown content shows the new title followed by previous content
-- Modification dates are updated correctly
-
-**Conclusion**: This is specific behavior of the Anytype API, not an issue with the MCP server. The server works correctly according to the official API documentation.
-
-## 🚀 Implemented Content Editing Strategy
-
-### Architectural Solution
-To solve the content concatenation behavior of the Anytype API, a **smart recreation strategy** has been implemented in the MCP server:
-
-### ✅ New Functionality: Automatic Recreation
-When updating the content (`body` or `markdown`) of an object:
-
-1. **Retrieval**: The original object is recovered with all its metadata
-2. **Creation**: A new object is created with:
-   - The updated content
-   - All original properties preserved
-   - Important metadata maintained
-3. **Deletion**: The original object is automatically deleted
-4. **Fallback**: If recreation fails, the traditional PATCH method is used
-
-### 🔧 Technical Implementation
-```javascript
-// The anytype_update_object function now automatically handles:
-if (body || markdown) {
-  // Recreation strategy for content
-  const originalObject = await getObject(space_id, object_id);
-  const newObject = await createObject(space_id, {
-    ...originalObject,
-    body: newContent
-  });
-  await deleteObject(space_id, object_id);
-  return newObject;
-} else {
-  // Traditional PATCH method for other properties
-  return await patchObject(space_id, object_id, updateData);
-}
+# Execute commands in container
+docker-compose exec anytype-mcp sh
 ```
 
-### ✅ Test Results
-- **Content**: Completely replaced (no concatenation)
-- **Name**: Updated correctly
-- **Properties**: Automatically preserved
-- **Metadata**: Maintained (creation dates, creator, etc.)
-- **Performance**: Minimal impact, atomic operation
+### Adding New Features
 
-### ⚠️ Observed Limitation
-- Very long markdown content may appear truncated in API responses
-- This is a display limitation, does not affect actual content storage
+1. **Define tool schema** in the appropriate `tools/*.ts` file
+2. **Implement handler** in the corresponding `handlers/*.ts` file
+3. **Register tool** in `src/index.ts`
+4. **Update documentation** as needed
 
-### 🎯 Use Cases
-This strategy is **automatic and transparent** for:
-- Complete page content editing
-- Long document updates
-- Markdown content replacement
-- Metadata preservation during edits
+### Code Style
 
-**Note**: For updates that only involve name, properties or metadata (without content changes), the traditional PATCH method is still used for greater efficiency.
+- TypeScript with strict type checking
+- Modular architecture with separation of concerns
+- Consistent error handling with MCP error types
+- Comprehensive input validation
 
-## License
+## 🤝 Contributing
 
-MIT
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+If you encounter any issues or have questions:
+
+1. Check the [Issues](../../issues) page for existing solutions
+2. Create a new issue with detailed information
+3. Include your environment details and error messages
+
+## 🙏 Acknowledgments
+
+- [Anytype](https://anytype.io/) for the amazing knowledge management platform
+- [Model Context Protocol](https://modelcontextprotocol.io/) for the integration framework
+- The open-source community for continuous inspiration
+
+---
+
+**Made with ❤️ for the Anytype community**
