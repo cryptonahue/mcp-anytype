@@ -2,7 +2,7 @@ import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import fetch from 'node-fetch';
 
 // API configuration
-export const API_BASE_URL = process.env.ANYTYPE_API_URL || 'http://localhost:47800';
+export const API_BASE_URL = process.env.ANYTYPE_API_URL || 'http://localhost:31009';
 export const API_VERSION = '2025-05-20';
 
 // System properties that cannot be set directly via API

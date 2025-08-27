@@ -2,31 +2,73 @@ import { makeRequest } from '../utils.js';
 
 /**
  * List properties in a space
+ * Based on official API documentation: GET /v1/spaces/{space_id}/properties
  */
 export async function handleListProperties(args: any) {
   const { space_id, limit = 20, offset = 0 } = args;
+  
+  if (!space_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameter',
+          message: 'Field "space_id" is required for listing properties',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
+  
   const response = await makeRequest(`/v1/spaces/${space_id}/properties?limit=${limit}&offset=${offset}`);
   return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
 }
 
 /**
  * Get a specific property
+ * Based on official API documentation: GET /v1/spaces/{space_id}/properties/{property_id}
  */
 export async function handleGetProperty(args: any) {
   const { space_id, property_id } = args;
+  
+  if (!space_id || !property_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameters',
+          message: 'Fields "space_id" and "property_id" are required for getting a property',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
+  
   const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}`);
   return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
 }
 
 /**
  * Create a new property
- * NOTE: Based on Context7 documentation, properties are managed through object types
- * This function creates a custom property for use in objects
+ * Based on official API documentation: POST /v1/spaces/{space_id}/properties
  */
 export async function handleCreateProperty(args: any) {
   const { space_id, name, type, format, description, source_object, read_only_value = false, key, ...propertyData } = args;
   
-  // Validate required fields based on Context7 API docs
+  if (!space_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameter',
+          message: 'Field "space_id" is required for creating a property',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
+  
+  // Validate required fields based on official API docs
   if (!name || !type) {
     return { 
       content: [{ 
@@ -61,10 +103,23 @@ export async function handleCreateProperty(args: any) {
 
 /**
  * Update a property
- * Based on Context7 documentation - updates existing property metadata
+ * Based on official API documentation: PATCH /v1/spaces/{space_id}/properties/{property_id}
  */
 export async function handleUpdateProperty(args: any) {
   const { space_id, property_id, name, description, format, source_object, read_only_value, ...updateData } = args;
+  
+  if (!space_id || !property_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameters',
+          message: 'Fields "space_id" and "property_id" are required for updating a property',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
   
   // Build update payload with only provided fields
   const requestBody: any = {};
@@ -86,9 +141,24 @@ export async function handleUpdateProperty(args: any) {
 
 /**
  * Delete a property
+ * Based on official API documentation: DELETE /v1/spaces/{space_id}/properties/{property_id}
  */
 export async function handleDeleteProperty(args: any) {
   const { space_id, property_id } = args;
+  
+  if (!space_id || !property_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameters',
+          message: 'Fields "space_id" and "property_id" are required for deleting a property',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
+  
   const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}`, {
     method: 'DELETE',
   });

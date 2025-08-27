@@ -3,6 +3,7 @@
 import 'dotenv/config';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { displayStartupInfo } from './startup-info.js';
 import {
   CallToolRequestSchema,
   ErrorCode,
@@ -206,9 +207,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 // Start the server
 async function main() {
+  // Display startup information
+  await displayStartupInfo();
+  
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Anytype MCP server running on stdio');
+  console.error('🎯 Servidor MCP conectado y listo para recibir solicitudes');
 }
 
 await main();

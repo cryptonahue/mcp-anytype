@@ -38,10 +38,14 @@ export const tagTools = [
       properties: {
         space_id: { type: 'string', description: 'Space ID', required: true },
         name: { type: 'string', description: 'Tag name', required: true },
-        color: { type: 'string', description: 'Tag color' },
-        property_key: { type: 'string', description: 'Property key', required: true },
+        color: { 
+          type: 'string', 
+          description: 'Tag color',
+          enum: ['grey', 'yellow', 'orange', 'red', 'pink', 'purple', 'blue', 'ice', 'teal', 'lime']
+        },
+        property_id: { type: 'string', description: 'Property ID (for multi_select properties)', required: true },
       },
-      required: ['space_id', 'name', 'property_key'],
+      required: ['space_id', 'name', 'property_id'],
     },
   },
   {
@@ -53,7 +57,11 @@ export const tagTools = [
         space_id: { type: 'string', description: 'Space ID', required: true },
         tag_id: { type: 'string', description: 'Tag ID', required: true },
         name: { type: 'string', description: 'New name' },
-        color: { type: 'string', description: 'New color' },
+        color: { 
+          type: 'string', 
+          description: 'New color',
+          enum: ['grey', 'yellow', 'orange', 'red', 'pink', 'purple', 'blue', 'ice', 'teal', 'lime']
+        },
       },
       required: ['space_id', 'tag_id'],
     },

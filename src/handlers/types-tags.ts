@@ -21,12 +21,12 @@ export async function handleGetType(args: any) {
 
 /**
  * Create a new type
- * Fixed based on Context7 documentation - including all required fields
+ * Fixed based on Context7 documentation - including all required fields including plural_name
  */
 export async function handleCreateType(args: any) {
-  const { space_id, name, description, icon, key, layout, properties, ...typeData } = args;
+  const { space_id, name, plural_name, description, icon, key, layout, properties, ...typeData } = args;
   
-  // Validate required field based on Context7 API docs
+  // Validate required fields based on API testing and best practices
   if (!name) {
     return { 
       content: [{ 
@@ -34,20 +34,24 @@ export async function handleCreateType(args: any) {
         text: JSON.stringify({
           error: 'Missing required field',
           message: 'Field "name" is required for creating a type',
-          required_fields: ['name'],
+          required_fields: ['name', 'plural_name'],
           provided_fields: Object.keys(args)
         }, null, 2) 
       }] 
     };
   }
   
-  // Build request body according to Context7 API specification
+  // Auto-generate plural_name if not provided
+  const finalPluralName = plural_name || (name.endsWith('s') ? name : name + 's');
+  
+  // Build request body according to API specification with required plural_name and key
   const requestBody = {
     name,
+    plural_name: finalPluralName, // Required field (not documented but mandatory)
     description,
     icon,
-    key, // Optional unique key
-    layout, // Optional layout specification
+    key: key || `${name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`, // Generate unique key if not provided
+    layout: layout || 'basic', // Default to basic layout (required field)
     properties: properties || [], // Array of property IDs
     ...typeData
   };
@@ -85,13 +89,13 @@ export async function handleDeleteType(args: any) {
 // Tags
 /**
  * List tags for a property
- * Fixed based on Context7 documentation - using property_key instead of property_id
+ * Fixed based on official API documentation - using property_id in URL path
  */
 export async function handleListTags(args: any) {
   const { space_id, property_key, property_id, limit = 20, offset = 0 } = args;
   
-  // Use property_key if provided, otherwise fall back to property_id for backwards compatibility
-  const propertyIdentifier = property_key || property_id;
+  // Use property_id if provided, otherwise fall back to property_key for backwards compatibility
+  const propertyIdentifier = property_id || property_key;
   
   if (!propertyIdentifier) {
     return { 
@@ -99,7 +103,7 @@ export async function handleListTags(args: any) {
         type: 'text', 
         text: JSON.stringify({
           error: 'Missing required parameter',
-          message: 'Either "property_key" or "property_id" is required',
+          message: 'Field "property_id" is required for listing tags',
           provided_parameters: Object.keys(args)
         }, null, 2) 
       }] 
@@ -112,10 +116,25 @@ export async function handleListTags(args: any) {
 
 /**
  * Get a specific tag
+ * Fixed based on official API documentation - tags are nested under properties
  */
 export async function handleGetTag(args: any) {
-  const { space_id, tag_id } = args;
-  const response = await makeRequest(`/v1/spaces/${space_id}/tags/${tag_id}`);
+  const { space_id, property_id, tag_id } = args;
+  
+  if (!property_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameter',
+          message: 'Field "property_id" is required for getting a tag',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
+  
+  const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}/tags/${tag_id}`);
   return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
 }
 
@@ -123,22 +142,22 @@ export async function handleGetTag(args: any) {
 
 /**
  * Create a new tag
- * Fixed based on Context7 documentation - using property_key and proper validation
+ * Fixed based on official API documentation - using property_id and proper validation
  */
 export async function handleCreateTag(args: any) {
   const { space_id, property_key, property_id, name, color = 'yellow', ...tagData } = args;
   
-  // Use property_key if provided, otherwise fall back to property_id for backwards compatibility
-  const propertyIdentifier = property_key || property_id;
+  // Use property_id if provided, otherwise fall back to property_key for backwards compatibility
+  const propertyIdentifier = property_id || property_key;
   
-  // Validate required fields based on Context7 API docs
+  // Validate required fields based on official API docs
   if (!propertyIdentifier) {
     return { 
       content: [{ 
         type: 'text', 
         text: JSON.stringify({
           error: 'Missing required parameter',
-          message: 'Either "property_key" or "property_id" is required',
+          message: 'Field "property_id" is required for creating a tag',
           provided_parameters: Object.keys(args)
         }, null, 2) 
       }] 
@@ -158,7 +177,23 @@ export async function handleCreateTag(args: any) {
     };
   }
   
-  // According to Context7 API docs, color and name are required
+  // Validate color if provided
+  const validColors = ['grey', 'yellow', 'orange', 'red', 'pink', 'purple', 'blue', 'ice', 'teal', 'lime'];
+  if (color && !validColors.includes(color)) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Invalid color',
+          message: `Color "${color}" is not valid. Valid colors are: ${validColors.join(', ')}`,
+          provided_color: color,
+          valid_colors: validColors
+        }, null, 2) 
+      }] 
+    };
+  }
+  
+  // According to official API docs, color and name are required
   const requestBody = {
     name,
     color,
@@ -174,10 +209,25 @@ export async function handleCreateTag(args: any) {
 
 /**
  * Update a tag
+ * Fixed based on official API documentation - tags are nested under properties
  */
 export async function handleUpdateTag(args: any) {
-  const { space_id, tag_id, ...updateData } = args;
-  const response = await makeRequest(`/v1/spaces/${space_id}/tags/${tag_id}`, {
+  const { space_id, property_id, tag_id, ...updateData } = args;
+  
+  if (!property_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameter',
+          message: 'Field "property_id" is required for updating a tag',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
+  
+  const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}/tags/${tag_id}`, {
     method: 'PATCH',
     body: JSON.stringify(updateData),
   });
@@ -186,10 +236,25 @@ export async function handleUpdateTag(args: any) {
 
 /**
  * Delete a tag
+ * Fixed based on official API documentation - tags are nested under properties
  */
 export async function handleDeleteTag(args: any) {
-  const { space_id, tag_id } = args;
-  const response = await makeRequest(`/v1/spaces/${space_id}/tags/${tag_id}`, {
+  const { space_id, property_id, tag_id } = args;
+  
+  if (!property_id) {
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          error: 'Missing required parameter',
+          message: 'Field "property_id" is required for deleting a tag',
+          provided_parameters: Object.keys(args)
+        }, null, 2) 
+      }] 
+    };
+  }
+  
+  const response = await makeRequest(`/v1/spaces/${space_id}/properties/${property_id}/tags/${tag_id}`, {
     method: 'DELETE',
   });
   return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };

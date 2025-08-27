@@ -12,7 +12,7 @@ export async function handleSearchObjects(args: any) {
   
   if (space_id) {
     // Search within a specific space
-    endpoint = `/v1/spaces/${space_id}/search?offset=${offset}&limit=${limit}`;
+    endpoint = `/spaces/${space_id}/search?offset=${offset}&limit=${limit}`;
     
     // For space search, use property_key and no "ot-" prefix
     requestBody = {
@@ -31,7 +31,7 @@ export async function handleSearchObjects(args: any) {
     }
   } else {
     // Global search across all spaces
-    endpoint = `/v1/search?offset=${offset}&limit=${limit}`;
+    endpoint = `/search?offset=${offset}&limit=${limit}`;
     
     // For global search, use property and "ot-" prefix for types
     requestBody = {

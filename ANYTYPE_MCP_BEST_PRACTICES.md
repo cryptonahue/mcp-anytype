@@ -286,6 +286,9 @@ Cuando `anytype_update_object` falla con contenido markdown:
 - **Estado**: ❌ Implementado pero endpoint no disponible en API actual
 
 ### 2. Tags (anytype_list_tags, anytype_create_tag)
+
+Los tags pueden usar estos colores: Possible values: [grey, yellow, orange, red, pink, purple, blue, ice, teal, lime]
+
 - **Problema**: Validación de parámetros incorrecta
 - **Solución**: 
   - Cambiar `property_key` a `property_id` en todos los handlers y schemas
